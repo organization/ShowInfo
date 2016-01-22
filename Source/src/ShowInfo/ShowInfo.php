@@ -3,8 +3,12 @@ namespace ShowInfo;
 
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as Color;
+use pocketmine\plugin\PluginBase;
+use pocketmine\command\CommandSender;
+use pocketmine\command\Command;
+use ShowInfo\task\ShowInfoTask;
 
-class ShowInfo extends \pocketmine\plugin\PluginBase{
+class ShowInfo extends PluginBase{
 	const DEFAULT_FORMAT = Color::DARK_AQUA . "Your Money: " . Color::AQUA . "{MONEY}" . Color::DARK_AQUA . "$  Rank: " . Color::AQUA . "{RANK}\n" . Color::DARK_AQUA . "Your Item: " . Color::AQUA . "{ITEMNAME} ({ITEMID}:{ITEMDAMAGE})\n" . Color::DARK_AQUA . "X: " . Color::AQUA . "{X}" . Color::DARK_AQUA . "  Y: " . Color::AQUA . "{Y}" . Color::DARK_AQUA . "  Z: " . Color::AQUA . "{Z}";
 
 	public function onEnable(){
@@ -17,10 +21,10 @@ class ShowInfo extends \pocketmine\plugin\PluginBase{
 			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾았습니다. : " : "Finded economy plugin : ") . $this->money->getName());
 		}
 		$this->loadData();
-		$this->getServer()->getScheduler()->scheduleRepeatingTask(new Task($this, [$this, "onTick"]), 10);
+ 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 3);
 	}
 
-	public function onCommand(\pocketmine\command\CommandSender $sender, \pocketmine\command\Command $cmd, $label, array $sub){
+	public function onCommand(CommandSender $sender, Command $cmd, $label, array $sub){
 		$ik = $this->isKorean();
 		if(!isset($sub[0]) || $sub[0] == ""){
 			return false;
@@ -102,7 +106,7 @@ class ShowInfo extends \pocketmine\plugin\PluginBase{
 		return true;
 	}
 
-	public function onTick(){
+	public function onAsyncRun(){
 		if($this->data["Enable"]){
 			$push = str_repeat(" ", abs($this->data["PushVolume"]));
 			if($this->data["PushVolume"] < 0){
