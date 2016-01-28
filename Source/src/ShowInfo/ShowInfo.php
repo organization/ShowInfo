@@ -6,22 +6,28 @@ use pocketmine\utils\TextFormat as Color;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
+use pocketmine\event\TranslationContainer as Translation;
 use ShowInfo\task\ShowInfoTask;
 
 class ShowInfo extends PluginBase{
 	const DEFAULT_FORMAT = Color::DARK_AQUA . "Your Money: " . Color::AQUA . "{MONEY}" . Color::DARK_AQUA . "$  Rank: " . Color::AQUA . "{RANK}\n" . Color::DARK_AQUA . "Your Item: " . Color::AQUA . "{ITEMNAME} ({ITEMID}:{ITEMDAMAGE})\n" . Color::DARK_AQUA . "X: " . Color::AQUA . "{X}" . Color::DARK_AQUA . "  Y: " . Color::AQUA . "{Y}" . Color::DARK_AQUA . "  Z: " . Color::AQUA . "{Z}";
 
+	private $data = [], $moneyPlugin, $playNoteBlockSongPlugin;
+
 	public function onEnable(){
 		$this->getServer()->getLogger()->info(Color::GREEN . "Find economy plugin...");
 		$pluginManager = $this->getServer()->getPluginManager();
 		$ik = $this->getServer()->getLanguage()->getName() == "\"한국어\"";
-		if(!($this->money = $pluginManager->getPlugin("PocketMoney")) && !($this->money = $pluginManager->getPlugin("EconomyAPI")) && !($this->money = $pluginManager->getPlugin("MassiveEconomy")) && !($this->money = $pluginManager->getPlugin("Money"))){
+		if(!($this->moneyPlugin = $pluginManager->getPlugin("PocketMoney")) && !($this->moneyPlugin = $pluginManager->getPlugin("EconomyAPI")) && !($this->moneyPlugin = $pluginManager->getPlugin("MassiveEconomy")) && !($this->moneyPlugin = $pluginManager->getPlugin("Money"))){
 			$this->getLogger()->info(Color::RED . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾지 못했습니다." : "Failed find economy plugin..."));
 		}else{
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾았습니다. : " : "Finded economy plugin : ") . $this->money->getName());
+			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾았습니다. : " : "Finded economy plugin : ") . $this->moneyPlugin->getName());
+		}
+		if(($this->playNoteBlockSongPlugin = $pluginManager->getPlugin("PlayNoteBlockSong")) !== null){
+			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾았습니다." : "Finded PlayNoteBlockSong plugin."));
 		}
 		$this->loadData();
- 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 3);
+ 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 5);
 	}
 
 	public function onCommand(CommandSender $sender, Command $cmd, $label, array $sub){
@@ -115,23 +121,23 @@ class ShowInfo extends PluginBase{
 				$str = str_replace("\n", "\n$push", $this->data["Format"]) . $push;
 			}
 			$ranks = [];
-			if($this->money !== null){
-				switch($this->money->getName()){
+			if($this->moneyPlugin !== null && (stripos($str, "{MONEY}") || stripos($str, "{RANK}"))){
+				switch($this->moneyPlugin->getName()){
 					case "PocketMoney":
 						$property = (new \ReflectionClass("\\PocketMoney\\PocketMoney"))->getProperty("users");
 						$property->setAccessible(true);
 						$moneys = [];
-						foreach($property->getValue($this->money)->getAll() as $k => $v)
+						foreach($property->getValue($this->moneyPlugin)->getAll() as $k => $v)
 							$moneys[strtolower($k)] = $v["money"];
 					break;
 					case "EconomyAPI":
-						$moneys = $this->money->getAllMoney()["money"];
+						$moneys = $this->moneyPlugin->getAllMoney()["money"];
 					break;
 					case "MassiveEconomy":
 						$property = (new \ReflectionClass("\\MassiveEconomy\\MassiveEconomyAPI"))->getProperty("data");
 						$property->setAccessible(true);
 						$moneys = [];
-						$dir = @opendir($path = $property->getValue($this->money) . "users/");
+						$dir = @opendir($path = $property->getValue($this->moneyPlugin) . "users/");
 						$cnt = 0;
 						while($open = readdir($dir)){
 							if(strpos($open, ".yml") !== false){
@@ -140,7 +146,7 @@ class ShowInfo extends PluginBase{
 						}
 					break;
 					case "Money":
-						$moneys = $this->money->getAllMoneys();
+						$moneys = $this->moneyPlugin->getAllMoneys();
 					break;
 					default:
 						$moneys = [];
@@ -164,23 +170,29 @@ class ShowInfo extends PluginBase{
 					}
 				}
 			}
-			foreach(($players = $this->getServer()->getOnlinePlayers()) as $player){
-				$item = $player->getInventory()->getItemInHand();
+			$players = $this->getServer()->getOnlinePlayers();
+ 			$message = str_ireplace([
+				"{PLAYERS}", "{MAXPLAYERS}", "{SONG}"
+			], [
+				count($players), $this->getServer()->getMaxPlayers(), 
+				!$this->playNoteBlockSongPlugin ? "-" : $this->playNoteBlockSongPlugin->getPlaySongName()
+			], $str);
+			foreach($players as $player){
+ 				$item = $player->getInventory()->getItemInHand();
 				$message = str_ireplace([
-						"{PLAYERS}", "{MAXPLAYERS}", "{PLAYER}", 
-						"{DISPLAYNAME}", "{MONEY}", "{RANK}", 
+						"{PLAYER}", "{DISPLAYNAME}", 
+						"{MONEY}", "{RANK}", 
 						"{HEALTH}", "{MAXHEALTH}", 
 						"{X}", "{Y}", "{Z}", "{WORLD}", 
-						"{ITEMID}", "{ITEMDAMAGE}", "{ITEMNAME}"
+						"{ITEMID}", "{ITEMDAMAGE}", "{ITEMNAME}", 
 				], [
-						count($players), $this->getServer()->getMaxPlayers(), 
 						$name = $player->getName(), $player->getDisplayName(),
 						isset($rank[$name = strtolower($name)]) ? $rank[$name][0] : "-",
-						isset($rank[$name = strtolower($name)]) ? $rank[$name][1] : "-",
+						isset($rank[$name]) ? $rank[$name][1] : "-",
 						$player->getHealth(), $player->getMaxHealth(), 
 						floor(round($player->x, 1) * 10) * 0.1, floor(round($player->y, 1) * 10) * 0.1, floor(round($player->z, 1) * 10) * 0.1, 
-						$player->getLevel()->getFolderName(), $item->getID(), $item->getDamage(), $item->getName()
-				], $str);
+						$player->level->getFolderName(), $item->getID(), $item->getDamage(), $item->getName()
+				], $message);
 				switch(true){
 					case stripos($this->data["DisplayType"], "popup") !== false:
 						$player->sendPopup($message);
@@ -207,6 +219,7 @@ class ShowInfo extends PluginBase{
 		file_put_contents($folder . "Changes List.txt",
 			"# {PLAYERS} = Player count in server \n" . 
 			"# {MAXPLAYERS} = Max player count \n" . 
+			"# {SONG} = Playing song name \n" . 
 			"# {PLAYER} = Player's Name \n" . 
 			"# {DISPLAYNAME} = Player's DisplayName \n" . 
 			"# {MONEY} = Player's Money \n" . 
