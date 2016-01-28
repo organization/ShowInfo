@@ -170,29 +170,29 @@ class ShowInfo extends PluginBase{
 					}
 				}
 			}
-			$players = $this->getServer()->getOnlinePlayers();
- 			$message = str_ireplace([
+ 			$str = str_ireplace([
 				"{PLAYERS}", "{MAXPLAYERS}", "{SONG}"
 			], [
-				count($players), $this->getServer()->getMaxPlayers(), 
+				count($this->getServer()->getOnlinePlayers()), $this->getServer()->getMaxPlayers(), 
 				!$this->playNoteBlockSongPlugin ? "-" : $this->playNoteBlockSongPlugin->getPlaySongName()
 			], $str);
-			foreach($players as $player){
+			foreach($this->getServer()->getOnlinePlayers() as $player){
+				$name = $player->getName();
  				$item = $player->getInventory()->getItemInHand();
 				$message = str_ireplace([
-						"{PLAYER}", "{DISPLAYNAME}", 
-						"{MONEY}", "{RANK}", 
-						"{HEALTH}", "{MAXHEALTH}", 
-						"{X}", "{Y}", "{Z}", "{WORLD}", 
-						"{ITEMID}", "{ITEMDAMAGE}", "{ITEMNAME}", 
+					"{PLAYER}", "{DISPLAYNAME}", 
+					"{MONEY}", "{RANK}", 
+					"{HEALTH}", "{MAXHEALTH}", 
+					"{X}", "{Y}", "{Z}", "{WORLD}", 
+					"{ITEMID}", "{ITEMDAMAGE}", "{ITEMNAME}", 
 				], [
-						$name = $player->getName(), $player->getDisplayName(),
-						isset($rank[$name = strtolower($name)]) ? $rank[$name][0] : "-",
-						isset($rank[$name]) ? $rank[$name][1] : "-",
-						$player->getHealth(), $player->getMaxHealth(), 
-						floor(round($player->x, 1) * 10) * 0.1, floor(round($player->y, 1) * 10) * 0.1, floor(round($player->z, 1) * 10) * 0.1, 
-						$player->level->getFolderName(), $item->getID(), $item->getDamage(), $item->getName()
-				], $message);
+					$name, $player->getDisplayName(),
+					isset($rank[$name = strtolower($name)]) ? $rank[$name][0] : "-",
+					isset($rank[$name = strtolower($name)]) ? $rank[$name][1] : "-",
+					$player->getHealth(), $player->getMaxHealth(), 
+					floor(round($player->x, 1) * 10) * 0.1, floor(round($player->y, 1) * 10) * 0.1, floor(round($player->z, 1) * 10) * 0.1, 
+					$player->level->getFolderName(), $item->getID(), $item->getDamage(), $item->getName()
+				], $str);
 				switch(true){
 					case stripos($this->data["DisplayType"], "popup") !== false:
 						$player->sendPopup($message);
