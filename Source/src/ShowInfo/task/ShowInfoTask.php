@@ -7,6 +7,6 @@ class ShowInfoTask extends PluginTask{
 	protected $owner;
 
  	public function onRun($currentTick){
-		$this->owner->getServer()->getScheduler()->scheduleAsyncTask(new ShowInfoAsyncTask());
+		$this->owner->onRun();
 	}
 }

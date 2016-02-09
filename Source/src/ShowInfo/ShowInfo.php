@@ -8,10 +8,12 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
 use pocketmine\event\TranslationContainer as Translation;
 use ShowInfo\task\ShowInfoTask;
+use ShowInfo\task\ShowInfoAsyncTask;
 
 class ShowInfo extends PluginBase{
 	const DEFAULT_FORMAT = Color::DARK_AQUA . "Your Money: " . Color::AQUA . "{MONEY}" . Color::DARK_AQUA . "$  Rank: " . Color::AQUA . "{RANK}\n" . Color::DARK_AQUA . "Your Item: " . Color::AQUA . "{ITEMNAME} ({ITEMID}:{ITEMDAMAGE})\n" . Color::DARK_AQUA . "X: " . Color::AQUA . "{X}" . Color::DARK_AQUA . "  Y: " . Color::AQUA . "{Y}" . Color::DARK_AQUA . "  Z: " . Color::AQUA . "{Z}";
 
+	public $tick = 0;
 	private $data = [], $moneyPlugin, $playNoteBlockSongPlugin;
 
 	public function onEnable(){
@@ -27,7 +29,7 @@ class ShowInfo extends PluginBase{
 			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾았습니다." : "Finded PlayNoteBlockSong plugin."));
 		}
 		$this->loadData();
- 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 5);
+ 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 20);
 	}
 
 	public function onCommand(CommandSender $sender, Command $cmd, $label, array $sub){
@@ -112,16 +114,15 @@ class ShowInfo extends PluginBase{
 		return true;
 	}
 
-	public function onAsyncRun(){
+	public function onRun(){
 		if($this->data["Enable"]){
-			$push = str_repeat(" ", abs($this->data["PushVolume"]));
-			if($this->data["PushVolume"] < 0){
-				$str =	$push . str_replace("\n", "$push\n", $this->data["Format"]);
-			}else{
-				$str = str_replace("\n", "\n$push", $this->data["Format"]) . $push;
-			}
-			$ranks = [];
-			if($this->moneyPlugin !== null && (stripos($str, "{MONEY}") || stripos($str, "{RANK}"))){
+ 			$info = str_ireplace(
+ 				"{SONG}", 
+				!$this->playNoteBlockSongPlugin ? "-" : $this->playNoteBlockSongPlugin->getPlaySongName(), 
+				$this->data["Format"]
+			);
+			$moneys = [];
+			if($this->moneyPlugin !== null && (stripos($info, "{MONEY}") || stripos($info, "{RANK}"))){
 				switch($this->moneyPlugin->getName()){
 					case "PocketMoney":
 						$property = (new \ReflectionClass("\\PocketMoney\\PocketMoney"))->getProperty("users");
@@ -152,55 +153,8 @@ class ShowInfo extends PluginBase{
 						$moneys = [];
 					break;
 				}
-				arsort($moneys);
-				$num = 1;
-				foreach($moneys as $name => $money){
-					if($this->getServer()->isOp($name = strtolower($name))){
-						$rank[$name] = [$money, "OP"];
-					}else{
-						if(!isset($same)){
-							$same = [$money,$num];
-						}
-						if($money == $same[0]){
-							$rank[$name] = [$money, $same[1]];
-						}else{
-							$rank[$name] = $same = [$money, $num];
-						}
-						$num++;
-					}
-				}
 			}
- 			$str = str_ireplace([
-				"{PLAYERS}", "{MAXPLAYERS}", "{SONG}"
-			], [
-				count($this->getServer()->getOnlinePlayers()), $this->getServer()->getMaxPlayers(), 
-				!$this->playNoteBlockSongPlugin ? "-" : $this->playNoteBlockSongPlugin->getPlaySongName()
-			], $str);
-			foreach($this->getServer()->getOnlinePlayers() as $player){
-				$name = $player->getName();
- 				$item = $player->getInventory()->getItemInHand();
-				$message = str_ireplace([
-					"{PLAYER}", "{DISPLAYNAME}", 
-					"{MONEY}", "{RANK}", 
-					"{HEALTH}", "{MAXHEALTH}", 
-					"{X}", "{Y}", "{Z}", "{WORLD}", 
-					"{ITEMID}", "{ITEMDAMAGE}", "{ITEMNAME}", 
-				], [
-					$name, $player->getDisplayName(),
-					isset($rank[$name = strtolower($name)]) ? $rank[$name][0] : "-",
-					isset($rank[$name = strtolower($name)]) ? $rank[$name][1] : "-",
-					$player->getHealth(), $player->getMaxHealth(), 
-					floor(round($player->x, 1) * 10) * 0.1, floor(round($player->y, 1) * 10) * 0.1, floor(round($player->z, 1) * 10) * 0.1, 
-					$player->level->getFolderName(), $item->getID(), $item->getDamage(), $item->getName()
-				], $str);
-				switch(true){
-					case stripos($this->data["DisplayType"], "popup") !== false:
-						$player->sendPopup($message);
-					case stripos($this->data["DisplayType"], "tip") !== false:
-						$player->sendTip($message);
-					break;
-				}
-			}
+			$this->getServer()->getScheduler()->scheduleAsyncTask(new ShowInfoAsyncTask($info, $moneys, $this->data, $this->getServer()->getOps()->getAll()));
 		}
 	}
 
