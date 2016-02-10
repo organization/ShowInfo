@@ -5,13 +5,18 @@ use pocketmine\Server;
 use pocketmine\scheduler\AsyncTask;
 
 class ShowInfoAsyncTask extends AsyncTask{
-	private $info = "", $moneys = [], $data = [], $operators, $rank = [];
+	private $info = "", $moneys, $data, $operators, $rank;
+	private $beforeMoneys;
 
 	public function __construct($info, $moneys, $data, $operators){
 		$this->info = $info;
-		$this->moneys = $moneys;
 		$this->data = $data;
 		$this->operators = $operators;
+		$this->beforeMoneys = $moneys;
+		if(version_compare("7.0", PHP_VERSION) <= 0){
+	 		$this->rank = new \Threaded();
+	 		$this->moneys = new \Threaded();
+	 	}
 	}
 
 	public function onCompletion(Server $server){
@@ -47,7 +52,7 @@ class ShowInfoAsyncTask extends AsyncTask{
 				break;
 			}
 		}
-	}
+ 	}
 
 	public function onRun(){
 		$push = str_repeat(" ", abs($this->data["PushVolume"]));
@@ -56,41 +61,38 @@ class ShowInfoAsyncTask extends AsyncTask{
 		}else{
 			$this->info = str_replace("\n", "\n$push", $this->info) . $push;
 		}
-		arsort($this->moneys);
 		$num = 1;
-		$rank = [];
-		foreach($this->moneys as $name => $money){
+		$moneys = (array) $this->beforeMoneys;
+		arsort($moneys);
+		if(version_compare("7.0", PHP_VERSION) > 0){
+			$rank = [];
+			$this->moneys = $moneys;
+		}
+		foreach($moneys as $name => $money){
+			if(version_compare("7.0", PHP_VERSION) <= 0){
+				$this->moneys[$name] = $money;
+			}
 			if(isset($this->operators[$name = strtolower($name)])){
-				$rank[$name] = "OP";
+				if(version_compare("7.0", PHP_VERSION) > 0){
+					$rank[$name] = "OP";
+				}else{
+					$this->rank[$name] = "OP";
+				}
 			}else{
 				if(!isset($same)){
 					$same = [$money,$num];
 				}
 				$same = $money == $same[0] ? [$money, $same[1]] : [$money, $num];
 				$num++;
-				$rank[$name] = $same[1];
+				if(version_compare("7.0", PHP_VERSION) > 0){
+					$rank[$name] = $same[1];
+				}else{
+					$this->rank[$name] = $same[1];
+				}
 			}
 		}
-		$this->rank = $rank;
- 	}
-}
-
-class Rank{
-	public $rank = [];
-
-	public function set($name, $rank){
-		$this->rank[$name] = $rank;
-	}
-
-	public function get($name){
-		return $this->rank[$name];
-	}
-
-	public function exists($name){
-		return isset($this->rank[$name]);
-	}
-
-	public function getAll(){
-		return $this->rank;
+		if(version_compare("7.0", PHP_VERSION) > 0){
+			$this->rank = $rank;
+		}
 	}
 }
