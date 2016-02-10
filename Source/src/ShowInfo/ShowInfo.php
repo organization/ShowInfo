@@ -26,7 +26,7 @@ class ShowInfo extends PluginBase{
 			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾았습니다. : " : "Finded economy plugin : ") . $this->moneyPlugin->getName());
 		}
 		if(($this->playNoteBlockSongPlugin = $pluginManager->getPlugin("PlayNoteBlockSong")) !== null){
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾았습니다." : "Finded PlayNoteBlockSong plugin."));
+			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾았습니다." : "Loading plugin PlayNoteBlockSong success."));
 		}
 		$this->loadData();
  		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 20);
@@ -43,7 +43,7 @@ class ShowInfo extends PluginBase{
 					$r = new Translation(Color::RED . "%commands.generic.permission");
 				}else{
 					$this->data["Enable"] = !$this->data["Enable"];
-					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "정보표시가 " . ($this->data["Enable"] ? "켜" : "꺼") . "졌습니다." : "ShoInfo is " . ($this->data["Enable"] ? "enabled" : "disabled"));
+					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "정보표시가 " . ($this->data["Enable"] ? "켜" : "꺼") . "졌습니다." : "ShoInfo is " . ($this->data["Enable"] ? "enabled." : "disabled."));
 				}
 			break;
 			case "type":
@@ -66,7 +66,7 @@ class ShowInfo extends PluginBase{
 					}else{
 						$this->data["DisplayType"] = implode(" & ", $type);;
 						$this->saveData();
-						$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "표시형식이 " . Color::GOLD . $this->data["DisplayType"] . Color::YELLOW . "로 변경되었습니다." : "Display type is changed to " . Color::GOLD . $this->data["DisplayType"]); 
+						$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "표시형식이 " . Color::GOLD . $this->data["DisplayType"] . Color::YELLOW . "로 변경되었습니다." : "Display type is changed to " . Color::GOLD . $this->data["DisplayType"] . "."); 
 					}
 				}
 			break;
@@ -77,7 +77,7 @@ class ShowInfo extends PluginBase{
 				}elseif(!isset($sub[1]) || $sub[1] == ""){
 					$r = Color::RED .  "Usage: /ShowInfo Type(T) " . ($ik ? "<표시타입>" : "<DisplayType>");
 				}elseif(!is_numeric($sub[1])){			
-					$r = Color::RED . "[ShowInfo] $sub[1]" . ($ik ? "는 잘못된 숫자입니다." : " is invalid number");
+					$r = Color::RED . "[ShowInfo] $sub[1]" . ($ik ? "는 잘못된 숫자입니다." : " is invalid number.");
 				}else{
 					$this->data["PushVolume"] = $sub[1];
 					$this->saveData();
@@ -89,7 +89,7 @@ class ShowInfo extends PluginBase{
 					$r = new Translation(Color::RED . "%commands.generic.permission");
 				}else{
 					$this->loadData();
-					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "데이터를 로드했습니다." : "Load thedata");
+					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "데이터를 로드했습니다." : "Complete loading the data.");
 				}
 			break;
 			case "reset":
@@ -103,7 +103,7 @@ class ShowInfo extends PluginBase{
 					$this->data["PushVolume"] = 0;
 					$this->data["Format"] = self::DEFAULT_FORMAT;
 					$this->saveData();
-					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "데이터를 리셋했습니다." : "Reset the data");
+					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "데이터를 리셋했습니다." : "Reset the data.");
 				}
 			break;
 			default:
