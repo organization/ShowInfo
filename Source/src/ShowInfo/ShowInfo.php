@@ -17,7 +17,6 @@ class ShowInfo extends PluginBase{
 	private $data = [], $moneyPlugin, $playNoteBlockSongPlugin;
 
 	public function onEnable(){
-		$this->getServer()->getLogger()->info(Color::GREEN . "Found economy plugin...");
 		$pluginManager = $this->getServer()->getPluginManager();
 		$ik = $this->getServer()->getLanguage()->getName() == "\"한국어\"";
 		$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾는중입니다." : "Finding economy plugin..."));
