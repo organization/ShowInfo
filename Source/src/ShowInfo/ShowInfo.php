@@ -17,16 +17,18 @@ class ShowInfo extends PluginBase{
 	private $data = [], $moneyPlugin, $playNoteBlockSongPlugin;
 
 	public function onEnable(){
-		$this->getServer()->getLogger()->info(Color::GREEN . "Find economy plugin...");
+		$this->getServer()->getLogger()->info(Color::GREEN . "Found economy plugin...");
 		$pluginManager = $this->getServer()->getPluginManager();
 		$ik = $this->getServer()->getLanguage()->getName() == "\"한국어\"";
 		if(!($this->moneyPlugin = $pluginManager->getPlugin("PocketMoney")) && !($this->moneyPlugin = $pluginManager->getPlugin("EconomyAPI")) && !($this->moneyPlugin = $pluginManager->getPlugin("MassiveEconomy")) && !($this->moneyPlugin = $pluginManager->getPlugin("Money"))){
 			$this->getLogger()->info(Color::RED . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾지 못했습니다." : "Failed find economy plugin..."));
 		}else{
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾았습니다. : " : "Finded economy plugin : ") . $this->moneyPlugin->getName());
+			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾았습니다. : " : "Found economy plugin : ") . $this->moneyPlugin->getName());
 		}
 		if(($this->playNoteBlockSongPlugin = $pluginManager->getPlugin("PlayNoteBlockSong")) !== null){
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾았습니다." : "Loading plugin PlayNoteBlockSong success."));
+			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾았습니다." : "Loading plugin PlayNoteBlockSong..."));
+			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong " : "Success."));
+
 		}
 		$this->loadData();
  		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 20);
@@ -62,7 +64,7 @@ class ShowInfo extends PluginBase{
 						$type[] = "Tip";
 					}
 					if(count($type) == 0){
-						$r = Color::RED . "[ShowInfo] $subs" . ($ik ? "는 잘못된 표시형식입니다." : " is invalid display type") . " (Popup | Tip)";
+						$r = Color::RED . "[ShowInfo] $subs" . ($ik ? "는 잘못된 표시형식입니다." : " is invalid display type.") . " (Popup | Tip)";
 					}else{
 						$this->data["DisplayType"] = implode(" & ", $type);;
 						$this->saveData();
