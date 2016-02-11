@@ -18,18 +18,19 @@ class ShowInfo extends PluginBase{
 
 	public function onEnable(){
 		$pluginManager = $this->getServer()->getPluginManager();
+		$logger = $this->getLogger();
 		$ik = $this->getServer()->getLanguage()->getName() == "\"한국어\"";
-		$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾는중입니다." : "Finding economy plugin..."));
+		$logger->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾는중입니다." : "Finding economy plugin..."));
 		if(!($this->moneyPlugin = $pluginManager->getPlugin("PocketMoney")) && !($this->moneyPlugin = $pluginManager->getPlugin("EconomyAPI")) && !($this->moneyPlugin = $pluginManager->getPlugin("MassiveEconomy")) && !($this->moneyPlugin = $pluginManager->getPlugin("Money"))){
-			$this->getLogger()->info(Color::RED . "[ShowInfo] " . ($ik ? "찾지 못했습니다." : "Not found."));
+			$logger->info(Color::RED . "[ShowInfo] " . ($ik ? "찾지 못했습니다." : "Not found."));
 		}else{
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "찾았습니다. : " : "Success : ") . Color::DARK_GREEN . $this->moneyPlugin->getName());
+			$logger->info(Color::GREEN . "[ShowInfo] " . ($ik ? "찾았습니다. : " : "Success : ") . Color::DARK_GREEN . $this->moneyPlugin->getName());
 		}
-		$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾는중입니다." : "Finding PlayNoteBlockSong plugin..."));
+		$logger->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾는중입니다." : "Finding PlayNoteBlockSong plugin..."));
 		if(!($this->playNoteBlockSongPlugin = $pluginManager->getPlugin("PlayNoteBlockSong")) !== null){
-			$this->getLogger()->info(Color::RED . "[ShowInfo] " . ($ik ? "찾지 못했습니다." : "Not found."));
+			$logger->info(Color::RED . "[ShowInfo] " . ($ik ? "찾지 못했습니다." : "Not found."));
 		}else{
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "찾았습니다." : "Success."));
+			$logger->info(Color::GREEN . "[ShowInfo] " . ($ik ? "찾았습니다." : "Success."));
 		}
 
 		$this->loadData();
