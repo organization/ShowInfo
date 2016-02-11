@@ -20,16 +20,19 @@ class ShowInfo extends PluginBase{
 		$this->getServer()->getLogger()->info(Color::GREEN . "Found economy plugin...");
 		$pluginManager = $this->getServer()->getPluginManager();
 		$ik = $this->getServer()->getLanguage()->getName() == "\"한국어\"";
+		$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾는중입니다." : "Finding economy plugin..."));
 		if(!($this->moneyPlugin = $pluginManager->getPlugin("PocketMoney")) && !($this->moneyPlugin = $pluginManager->getPlugin("EconomyAPI")) && !($this->moneyPlugin = $pluginManager->getPlugin("MassiveEconomy")) && !($this->moneyPlugin = $pluginManager->getPlugin("Money"))){
-			$this->getLogger()->info(Color::RED . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾지 못했습니다." : "Failed find economy plugin..."));
+			$this->getLogger()->info(Color::RED . "[ShowInfo] " . ($ik ? "찾지 못했습니다." : "Not found."));
 		}else{
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾았습니다. : " : "Found economy plugin : ") . $this->moneyPlugin->getName());
+			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "찾았습니다. : " : "Success : ") . Color::DARK_GREEN . $this->moneyPlugin->getName());
 		}
-		if(($this->playNoteBlockSongPlugin = $pluginManager->getPlugin("PlayNoteBlockSong")) !== null){
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾았습니다." : "Loading plugin PlayNoteBlockSong..."));
-			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong " : "Success."));
+		$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾는중입니다." : "Finding PlayNoteBlockSong plugin..."));
+		if(!($this->playNoteBlockSongPlugin = $pluginManager->getPlugin("PlayNoteBlockSong")) !== null){
+			$this->getLogger()->info(Color::RED . "[ShowInfo] " . ($ik ? "찾지 못했습니다." : "Not found."));
+		}else{
+			$this->getLogger()->info(Color::GREEN . "[ShowInfo] " . ($ik ? "찾았습니다." : "Success."));
+		}
 
-		}
 		$this->loadData();
  		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 20);
 	}
