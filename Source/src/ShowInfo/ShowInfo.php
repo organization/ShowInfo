@@ -19,36 +19,35 @@ class ShowInfo extends PluginBase{
 	public function onEnable(){
 		$pluginManager = $this->getServer()->getPluginManager();
 		$logger = $this->getLogger();
-		$ik = $this->getServer()->getLanguage()->getName() == "\"한국어\"";
-		$logger->info(Color::GREEN . "[ShowInfo] " . ($ik ? "경제 플러그인을 찾는중입니다." : "Finding economy plugin..."));
+		$isKorean = $this->isKorean();
+		$logger->info(Color::GREEN . "[ShowInfo] " . ($isKorean ? "경제 플러그인을 찾는중입니다." : "Finding economy plugin..."));
 		if(!($this->moneyPlugin = $pluginManager->getPlugin("PocketMoney")) && !($this->moneyPlugin = $pluginManager->getPlugin("EconomyAPI")) && !($this->moneyPlugin = $pluginManager->getPlugin("MassiveEconomy")) && !($this->moneyPlugin = $pluginManager->getPlugin("Money"))){
-			$logger->info(Color::RED . "[ShowInfo] " . ($ik ? "찾지 못했습니다." : "Not found."));
+			$logger->info(Color::RED . "[ShowInfo] " . ($isKorean ? "찾지 못했습니다." : "Not found."));
 		}else{
-			$logger->info(Color::GREEN . "[ShowInfo] " . ($ik ? "찾았습니다. : " : "Success : ") . Color::DARK_GREEN . $this->moneyPlugin->getName());
+			$logger->info(Color::GREEN . "[ShowInfo] " . ($isKorean ? "찾았습니다. : " : "Success : ") . Color::DARK_GREEN . $this->moneyPlugin->getName());
 		}
-		$logger->info(Color::GREEN . "[ShowInfo] " . ($ik ? "PlayNoteBlockSong 플러그인을 찾는중입니다." : "Finding PlayNoteBlockSong plugin..."));
+		$logger->info(Color::GREEN . "[ShowInfo] " . ($isKorean ? "PlayNoteBlockSong 플러그인을 찾는중입니다." : "Finding PlayNoteBlockSong plugin..."));
 		if(!($this->playNoteBlockSongPlugin = $pluginManager->getPlugin("PlayNoteBlockSong")) !== null){
-			$logger->info(Color::RED . "[ShowInfo] " . ($ik ? "찾지 못했습니다." : "Not found."));
+			$logger->info(Color::RED . "[ShowInfo] " . ($isKorean ? "찾지 못했습니다." : "Not found."));
 		}else{
-			$logger->info(Color::GREEN . "[ShowInfo] " . ($ik ? "찾았습니다." : "Success."));
+			$logger->info(Color::GREEN . "[ShowInfo] " . ($isKorean ? "찾았습니다." : "Success."));
 		}
-
 		$this->loadData();
  		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ShowInfoTask($this), 20);
 	}
 
 	public function onCommand(CommandSender $sender, Command $cmd, $label, array $sub){
-		$ik = $this->isKorean();
 		if(!isset($sub[0]) || $sub[0] == ""){
 			return false;
 		}
+		$isKorean = $this->isKorean();
 		switch(strtolower($sub[0])){
 			case "on":
 				if(!$sender->hasPermission("showinfo.cmd.on")){
 					$r = new Translation(Color::RED . "%commands.generic.permission");
 				}else{
 					$this->data["Enable"] = !$this->data["Enable"];
-					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "정보표시가 " . ($this->data["Enable"] ? "켜" : "꺼") . "졌습니다." : "ShoInfo is " . ($this->data["Enable"] ? "enabled." : "disabled."));
+					$r = Color::YELLOW . "[ShowInfo] " . ($isKorean ? "정보표시가 " . ($this->data["Enable"] ? "켜" : "꺼") . "졌습니다." : "ShoInfo is " . ($this->data["Enable"] ? "enabled." : "disabled."));
 				}
 			break;
 			case "type":
@@ -56,7 +55,7 @@ class ShowInfo extends PluginBase{
 				if(!$sender->hasPermission("showinfo.cmd.type")){
 					$r = new Translation(Color::RED . "%commands.generic.permission");
 				}elseif(!isset($sub[1]) || $sub[1] == ""){
-					$r = Color::RED .  "Usage: /ShowInfo Type(T) " . ($ik ? "<표시타입>" : "<DisplayType>");
+					$r = Color::RED .  "Usage: /ShowInfo Type(T) " . ($isKorean ? "<표시타입>" : "<DisplayType>");
 				}else{					
 					$subs = implode(" ", array_splice($sub, 1));
 					$type = [];
@@ -67,11 +66,11 @@ class ShowInfo extends PluginBase{
 						$type[] = "Tip";
 					}
 					if(count($type) == 0){
-						$r = Color::RED . "[ShowInfo] $subs" . ($ik ? "는 잘못된 표시형식입니다." : " is invalid display type.") . " (Popup | Tip)";
+						$r = Color::RED . "[ShowInfo] $subs" . ($isKorean ? "는 잘못된 표시형식입니다." : " is invalid display type.") . " (Popup | Tip)";
 					}else{
 						$this->data["DisplayType"] = implode(" & ", $type);;
 						$this->saveData();
-						$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "표시형식이 " . Color::GOLD . $this->data["DisplayType"] . Color::YELLOW . "로 변경되었습니다." : "Display type is changed to " . Color::GOLD . $this->data["DisplayType"] . "."); 
+						$r = Color::YELLOW . "[ShowInfo] " . ($isKorean ? "표시형식이 " . Color::GOLD . $this->data["DisplayType"] . Color::YELLOW . "로 변경되었습니다." : "Display type is changed to " . Color::GOLD . $this->data["DisplayType"] . "."); 
 					}
 				}
 			break;
@@ -80,13 +79,13 @@ class ShowInfo extends PluginBase{
 				if(!$sender->hasPermission("showinfo.cmd.push")){
 					$r = new Translation(Color::RED . "%commands.generic.permission");
 				}elseif(!isset($sub[1]) || $sub[1] == ""){
-					$r = Color::RED .  "Usage: /ShowInfo Type(T) " . ($ik ? "<표시타입>" : "<DisplayType>");
+					$r = Color::RED .  "Usage: /ShowInfo Type(T) " . ($isKorean ? "<표시타입>" : "<DisplayType>");
 				}elseif(!is_numeric($sub[1])){			
-					$r = Color::RED . "[ShowInfo] $sub[1]" . ($ik ? "는 잘못된 숫자입니다." : " is invalid number.");
+					$r = Color::RED . "[ShowInfo] $sub[1]" . ($isKorean ? "는 잘못된 숫자입니다." : " is invalid number.");
 				}else{
 					$this->data["PushVolume"] = $sub[1];
 					$this->saveData();
-					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "밀기 정도가 " . Color::GOLD . $sub[1] . Color::YELLOW . "로 변경되었습니다." : "Push volmue is changed to " . Color::GOLD . $sub[1]); 
+					$r = Color::YELLOW . "[ShowInfo] " . ($isKorean ? "밀기 정도가 " . Color::GOLD . $sub[1] . Color::YELLOW . "로 변경되었습니다." : "Push volmue is changed to " . Color::GOLD . $sub[1]); 
 				}
 			break;
 			case "reload":
@@ -94,7 +93,7 @@ class ShowInfo extends PluginBase{
 					$r = new Translation(Color::RED . "%commands.generic.permission");
 				}else{
 					$this->loadData();
-					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "데이터를 로드했습니다." : "Complete loading the data.");
+					$r = Color::YELLOW . "[ShowInfo] " . ($isKorean ? "데이터를 로드했습니다." : "Complete loading the data.");
 				}
 			break;
 			case "reset":
@@ -108,7 +107,7 @@ class ShowInfo extends PluginBase{
 					$this->data["PushVolume"] = 0;
 					$this->data["Format"] = self::DEFAULT_FORMAT;
 					$this->saveData();
-					$r = Color::YELLOW . "[ShowInfo] " . ($ik ? "데이터를 리셋했습니다." : "Reset the data.");
+					$r = Color::YELLOW . "[ShowInfo] " . ($isKorean ? "데이터를 리셋했습니다." : "Reset the data.");
 				}
 			break;
 			default:
